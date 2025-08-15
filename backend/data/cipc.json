@@ -1,0 +1,6 @@
+[
+  {"name": "Woolworths", "registered": true},
+  {"name": "Mzansi Construction", "registered": false},
+  {"name": "Capitec Bank", "registered": true},
+  {"name": "Taxi Scam Pty", "registered": false}
+]
