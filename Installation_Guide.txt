@@ -1,0 +1,80 @@
+=== TRUSTSHIELD SETUP GUIDE ===
+
+1. INSTALL REQUIREMENTS
+---------------------------------
+# Install Node.js (includes npm):
+https://nodejs.org/en/download/
+
+# Verify installations:
+node -v
+npm -v
+npx -v
+
+2. PROJECT SETUP
+---------------------------------
+# Clone repository (if applicable):
+git clone [your-repo-url]
+cd Trustshield
+
+# OR create fresh structure:
+mkdir -p frontend/src/{services,components} frontend/public/fraud-packets
+
+3. INSTALL DEPENDENCIES
+---------------------------------
+cd frontend
+
+# Core dependencies:
+npm install react react-dom @mui/material @emotion/react @emotion/styled
+npm install pdf-lib react-pdf @react-pdf/renderer pdfkit uuid
+
+# Dev dependencies:
+npm install --save-dev @types/react @types/react-dom
+
+4. GENERATE SAMPLE PDFs
+---------------------------------
+# Create generation script at frontend/scripts/generate-pdfs.js
+# Run generator:
+npx node scripts/generate-pdfs.js
+
+5. START APPLICATION
+---------------------------------
+# Development mode:
+npx start
+
+# Production build:
+npx build
+
+6. KEY NPX COMMANDS
+---------------------------------
+npx create-react-app@latest my-app  # If starting fresh
+npx json-server --watch db.json     # For mock API
+npx prettier --write .              # Code formatting
+npx eslint src                      # Linting
+
+7. TROUBLESHOOTING
+---------------------------------
+# Common fixes:
+- 404 Errors: Verify PDFs exist in public/fraud-packets/
+- Import Errors: Check all file paths are correct
+- Style Issues: Restart dev server after CSS changes
+
+# Reset everything:
+rm -rf node_modules/
+npm cache clean --force
+npm install
+
+=== FILE STRUCTURE ===
+frontend/
+├── src/
+│   ├── services/
+│   │   ├── riskService.js
+│   │   ├── cipc.json
+│   │   └── watchlist.json
+│   ├── components/
+│   │   ├── FraudCaseView.js
+│   │   └── RiskPanel.js
+│   └── App.js
+├── public/
+│   └── fraud-packets/   # Generated PDFs go here
+└── scripts/
+    └── generate-pdfs.js
