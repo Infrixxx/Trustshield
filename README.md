@@ -4,9 +4,9 @@ contains API for BET hackathon
 # TrustShield: Real-Time Payment Security for South Africa  
 **Stop fraud at the source. Turn evidence into action. Protect every Rand.**  
 
-[![Demo Video](https://img.shields.io/badge/DEMO-VIDEO-ff0000?style=for-the-badge)](https://youtu.be/dQw4w9WgXcQ) 
-[![Live Demo](https://img.shields.io/badge/LIVE-DEMO-00cc00?style=for-the-badge)](https://trustshield-demo.vercel.app) 
-[![Pitch Deck](https://img.shields.io/badge/PITCH-DECK-0077b5?style=for-the-badge)](TrustShield_Pitch_Deck.pdf)
+[![Demo Video]([https://img.shields.io/badge/DEMO-VIDEO-ff0000?style=for-the-badge)](https://youtu.be/dQw4w9WgXcQ)](https://youtu.be/Q9hHOFAydC8) 
+[![Live Demo](https://trustshield.netlify.app/) 
+[![Pitch Deck](https://docs.google.com/presentation/d/1R3a72kaofB4my4rPROoQPS_TI-BPEkCLmh6slsoJHqw/edit?usp=sharing)
 
 ## 🛡️ The Crisis  
 **R740 million** was stolen from South Africans through payment fraud in 2023. Scams like:  
