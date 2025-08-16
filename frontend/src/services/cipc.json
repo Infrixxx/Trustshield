@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Woolworths",
+    "status": "REGISTERED"
+  },
+  {
+    "name": "Capitec",
+    "status": "REGISTERED"
+  },
+  {
+    "name": "Mzansi Construction",
+    "status": "REGISTERED" 
+  },
+  {
+    "name": "Taxi Scam Pty",
+    "status": "UNREGISTERED"
+  },
+  {
+    "name": "Quick Cash Solutions",
+    "status": "UNREGISTERED"
+  }
+]

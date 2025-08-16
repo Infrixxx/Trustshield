@@ -60,7 +60,7 @@ const PaymentForm = ({ onSubmit, isLoading }) => {
           {isLoading ? (
             <span className="spinner"></span>
           ) : (
-            'ANALYZE RISK'
+            'ANALYSE RISK'
           )}
         </button>
       </form>
