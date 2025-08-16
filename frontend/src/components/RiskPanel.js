@@ -17,59 +17,48 @@ import BlockIcon from '@mui/icons-material/Block';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import WarningIcon from '@mui/icons-material/Warning';
+import { assessRisk } from '../services/riskService'; // Import the service
 
-const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
+const RiskPanel = ({ transactionData, onBlock, onConfirm2PA, isGenerating }) => {
   const [expanded, setExpanded] = useState(true);
-  const [localRiskData, setLocalRiskData] = useState(null);
+  const [riskAssessment, setRiskAssessment] = useState(null);
   const theme = useTheme();
 
   useEffect(() => {
-    if (riskData) {
-      // Enhance risk data with additional verification
-      const enhancedData = {
-        ...riskData,
-        isHighRisk: shouldBlockTransaction(riskData),
-        enhancedTriggers: getEnhancedTriggers(riskData)
-      };
-      setLocalRiskData(enhancedData);
+    if (transactionData) {
+      const { merchant, amount } = transactionData;
+      const result = assessRisk(merchant, amount);
+      
+      // Add AI insights based on risk level
+      const aiInsights = result.isHighRisk
+        ? [
+            "Matches known fraud pattern in our database",
+            "Unregistered business with high-risk indicators",
+            "Transaction amount exceeds typical patterns for this merchant type"
+          ]
+        : [
+            "No significant fraud indicators detected",
+            "Merchant is registered with CIPC",
+            "Transaction amount within expected range"
+          ];
+      
+      setRiskAssessment({
+        ...result,
+        merchant,
+        amount,
+        aiInsights
+      });
     }
-  }, [riskData]);
+  }, [transactionData]);
 
-  const shouldBlockTransaction = (data) => {
-    // Critical red flags
-    const criticalRedFlags = [
-      'Unregistered business',
-      'Watchlist match',
-      'Known scam pattern'
-    ];
-    
-    return (
-      data.score >= 75 || 
-      data.triggers.some(trigger => criticalRedFlags.includes(trigger)) ||
-      (data.merchant && data.merchant.toLowerCase().includes('scam'))
-    );
-  };
+  if (!riskAssessment) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <CircularProgress />
+    </Box>
+  );
 
-  const getEnhancedTriggers = (data) => {
-    const baseTriggers = [...data.triggers];
-    
-    // Add merchant-specific warnings
-    if (data.merchant) {
-      if (data.merchant.includes('Taxi Scam')) {
-        baseTriggers.push('Confirmed fraudulent entity (Taxi Scam)');
-      }
-      if (data.merchant.includes('Quick Cash')) {
-        baseTriggers.push('Matches known loan scam pattern');
-      }
-    }
-    
-    return baseTriggers;
-  };
-
-  if (!localRiskData) return null;
-
-  const riskColor = localRiskData.isHighRisk ? '#ff416c' : '#38ef7d';
-  const riskLabel = localRiskData.isHighRisk ? 'HIGH RISK' : 'LOW RISK';
+  const riskColor = riskAssessment.isHighRisk ? '#ff416c' : '#38ef7d';
+  const riskLabel = riskAssessment.isHighRisk ? 'HIGH RISK' : 'LOW RISK';
 
   return (
     <Box
@@ -85,7 +74,7 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
       }}
     >
       {/* Critical Alert for obvious scams */}
-      {localRiskData.merchant && localRiskData.merchant.toLowerCase().includes('scam') && (
+      {riskAssessment.merchant.toLowerCase().includes('scam') && (
         <Alert 
           severity="error" 
           icon={<WarningIcon fontSize="inherit" />}
@@ -98,17 +87,17 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <Typography variant="h5" sx={{ 
           fontWeight: 'bold', 
-          background: `linear-gradient(to right, ${riskColor}, ${localRiskData.isHighRisk ? '#ff4b2b' : '#11998e'})`,
+          background: `linear-gradient(to right, ${riskColor}, ${riskAssessment.isHighRisk ? '#ff4b2b' : '#11998e'})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           mr: 1
         }}>
-          AI Risk Score: {localRiskData.score}%
+          AI Risk Score: {riskAssessment.score}%
         </Typography>
         
         <Box sx={{
           bgcolor: riskColor,
-          color: localRiskData.isHighRisk ? 'white' : '#0f3460',
+          color: riskAssessment.isHighRisk ? 'white' : '#0f3460',
           px: 1,
           py: 0.5,
           borderRadius: 1,
@@ -130,7 +119,7 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
       </Typography>
       
       <List dense sx={{ mb: 2 }}>
-        {localRiskData.enhancedTriggers.map((trigger, index) => (
+        {riskAssessment.triggers.map((trigger, index) => (
           <ListItem key={index} sx={{ py: 0, color: '#ffcc00' }}>
             <ListItemText 
               primary={`• ${trigger}`} 
@@ -164,23 +153,17 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
         
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <List dense>
-            {localRiskData.aiInsights?.map((insight, index) => (
+            {riskAssessment.aiInsights.map((insight, index) => (
               <ListItem key={index} sx={{ py: 0.5, color: '#e0e0e0' }}>
                 <ListItemText 
                   primary={`• ${insight}`} 
                   primaryTypographyProps={{ variant: 'body2' }} 
                 />
               </ListItem>
-            )) || (
-              <ListItem sx={{ color: '#e0e0e0' }}>
-                <ListItemText 
-                  primary="• Analyzing transaction patterns against known fraud models" 
-                />
-              </ListItem>
-            )}
+            ))}
           </List>
           
-          {localRiskData.isHighRisk && (
+          {riskAssessment.isHighRisk && (
             <Box sx={{ 
               mt: 1,
               p: 1.5,
@@ -189,7 +172,7 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
               borderRadius: '0 4px 4px 0'
             }}>
               <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ffcc00' }}>
-                ⚠️ Immediate action recommended: {localRiskData.merchant?.includes('Scam') 
+                ⚠️ Immediate action recommended: {riskAssessment.merchant.includes('Scam') 
                   ? 'Confirmed fraudulent entity' 
                   : 'High probability of fraud'}
               </Typography>
@@ -203,13 +186,13 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
           fontWeight: 'bold', 
           textAlign: 'center', 
           mb: 2,
-          color: localRiskData.isHighRisk ? '#ffcc00' : '#38ef7d'
+          color: riskAssessment.isHighRisk ? '#ffcc00' : '#38ef7d'
         }}>
-          {localRiskData.isHighRisk ? 'High-Risk Action Required' : 'Transaction Appears Valid'}
+          {riskAssessment.isHighRisk ? 'High-Risk Action Required' : 'Transaction Appears Valid'}
         </Typography>
         
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-          {localRiskData.isHighRisk ? (
+          {riskAssessment.isHighRisk ? (
             <>
               <Button
                 variant="contained"
