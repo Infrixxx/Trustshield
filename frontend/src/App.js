@@ -5,7 +5,6 @@ import FraudPacket from './components/FraudPacket';
 import PaymentSuccess from './components/PaymentSuccess';
 import { checkRisk, generateFraudPacket, processPayment } from './services/api';
 
-// Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -46,7 +45,6 @@ function App() {
   const [transactionData, setTransactionData] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null);
 
-  // Countdown effect
   useEffect(() => {
     let timer;
     if (verificationState === 'awaiting2FA' && countdown > 0) {
@@ -98,7 +96,6 @@ function App() {
       setFraudPacket(packet);
       setVerificationState('blocked');
       
-      // In real app: Alert bank and SAPS
       console.log('Alerting bank and SAPS about fraud case:', packet.caseId);
     } catch (error) {
       console.error('Report generation failed:', error);
@@ -169,7 +166,6 @@ function App() {
       <div className="app-container">
         <header className="app-header">
           <div className="logo-container">
-            {/* Use a simple SVG instead of react-icons to avoid rendering issues */}
             <svg className="app-logo" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
@@ -201,10 +197,13 @@ function App() {
 
           {verificationState === 'lowRisk' && transactionData && (
             <div className="low-risk-panel">
+              <div className="verified-icon">✓</div>
               <h2>Transaction Verified</h2>
               <div className="transaction-details">
-                <p>{transactionData.merchant} - R{transactionData.amount}</p>
-                <p>Risk assessment: Low Risk</p>
+                <p className="merchant-amount">
+                  {transactionData.merchant} - R{transactionData.amount}
+                </p>
+                <p className="risk-assessment">Risk assessment: <span className="low-risk-badge">Low Risk</span></p>
               </div>
               <button 
                 className="proceed-btn"
