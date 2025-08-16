@@ -12,7 +12,9 @@ export const checkRisk = async (merchant, amount) => {
     return {
       score: response.data.score,
       triggers: response.data.triggers,
+      aiInsights: response.data.aiInsights || [],
       recommendation: response.data.recommendation,
+      aiModel: response.data.aiModel || "TrustShield AI",
       merchantData: {
         name: merchant,
         status: response.data.cipcStatus || 'UNREGISTERED',
@@ -66,7 +68,6 @@ export const generateFraudPacket = async (riskData) => {
   }
 };
 
-// Add payment processing function
 export const processPayment = async (transactionData) => {
   try {
     const response = await axios.post(`${API_BASE}/payment`, {
@@ -90,7 +91,6 @@ export const processPayment = async (transactionData) => {
   }
 };
 
-// Add backend test function
 export const testBackendConnection = async () => {
   try {
     const response = await axios.get(`${API_BASE}/health`);

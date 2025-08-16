@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Typography, 
@@ -6,13 +6,20 @@ import {
   List, 
   ListItem, 
   ListItemText,
-  CircularProgress
+  ListItemIcon,
+  CircularProgress,
+  Collapse,
+  IconButton
 } from '@mui/material';
 import BlockIcon from '@mui/icons-material/Block';
 import WarningIcon from '@mui/icons-material/Warning';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 
 const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
+  const [expanded, setExpanded] = useState(false);
+  
   if (!riskData) return null;
   
   const isBlock = riskData.recommendation === 'BLOCK';
@@ -32,9 +39,14 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <WarningIcon sx={{ fontSize: 32, mr: 1.5, color: `${riskColor}.dark` }} />
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: `${riskColor}.dark` }}>
-          Risk Score: {riskData.score}% - {riskData.recommendation}
-        </Typography>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: `${riskColor}.dark` }}>
+            AI Risk Score: {riskData.score}% - {riskData.recommendation}
+          </Typography>
+          <Typography variant="body2" sx={{ color: `${riskColor}.dark` }}>
+            AI Model: {riskData.aiModel || "TrustShield FraudNet"}
+          </Typography>
+        </Box>
       </Box>
       
       {riskData.triggers.length > 0 && (
@@ -53,6 +65,47 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
             ))}
           </List>
         </>
+      )}
+      
+      {riskData.aiInsights.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => setExpanded(!expanded)}
+            endIcon={<ExpandMoreIcon sx={{ 
+              transform: expanded ? 'rotate(180deg)' : 'none',
+              transition: 'transform 0.3s'
+            }} />}
+            sx={{ 
+              justifyContent: 'space-between',
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(25, 118, 210, 0.1)',
+              borderColor: '#1976d2',
+              '&:hover': {
+                backgroundColor: 'rgba(25, 118, 210, 0.2)'
+              }
+            }}
+          >
+            AI Insights & Reasoning
+          </Button>
+          
+          <Collapse in={expanded} timeout="auto" unmountOnExit>
+            <List dense sx={{ mt: 1, bgcolor: 'background.paper', borderRadius: 1, p: 1 }}>
+              {riskData.aiInsights.map((insight, index) => (
+                <ListItem key={index} sx={{ py: 1 }}>
+                  <ListItemIcon sx={{ minWidth: 36 }}>
+                    <PsychologyIcon color="primary" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={insight} 
+                    primaryTypographyProps={{ variant: 'body2' }} 
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Collapse>
+        </Box>
       )}
       
       {isBlock && (

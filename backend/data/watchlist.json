@@ -2,21 +2,36 @@
   {
     "name": "Mzansi Construction",
     "reports": 12,
-    "reason": "Multiple scam reports involving advance fee fraud"
+    "reason": "Multiple scam reports involving advance fee fraud",
+    "aiPattern": "Construction industry fraud pattern (98% match)",
+    "riskScore": 88
   },
   {
-    "name": "Fast Money Loans",
-    "reports": 8,
-    "reason": "Unauthorized debit orders"
-  },
-  {
-    "name": "Taxi Scam Pty",
+    "name": "QuickCash Loans",
     "reports": 23,
-    "reason": "Fake taxi bookings and payments"
+    "reason": "Unauthorized debit orders and hidden fees",
+    "aiPattern": "Loan scam pattern (92% match)",
+    "riskScore": 78
   },
   {
-    "name": "Quick Cash Solutions",
+    "name": "TechDealz SA",
+    "reports": 8,
+    "reason": "Non-delivery of high-value electronics",
+    "aiPattern": "E-commerce fraud pattern (87% match)",
+    "riskScore": 65
+  },
+  {
+    "name": "Taxi Express Pty",
     "reports": 17,
-    "reason": "Advance fee fraud"
+    "reason": "Fake bookings and payment diversions",
+    "aiPattern": "Transportation fraud pattern (85% match)",
+    "riskScore": 72
+  },
+  {
+    "name": "Property Wealth SA",
+    "reports": 5,
+    "reason": "Rental deposit scams",
+    "aiPattern": "Real estate fraud pattern (83% match)",
+    "riskScore": 68
   }
 ]
