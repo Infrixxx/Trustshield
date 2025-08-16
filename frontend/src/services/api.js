@@ -40,7 +40,6 @@ export const generateFraudPacket = async (riskData) => {
     const response = await axios.post(`${API_BASE}/block`, {
       merchant: riskData.merchantData.name,
       amount: riskData.amount || 0,
-      verification: riskData.merchantData,
       triggers: riskData.triggers
     });
     
@@ -64,5 +63,39 @@ export const generateFraudPacket = async (riskData) => {
     }
     
     throw new Error(errorMessage);
+  }
+};
+
+// Add payment processing function
+export const processPayment = async (transactionData) => {
+  try {
+    const response = await axios.post(`${API_BASE}/payment`, {
+      merchant: transactionData.merchant,
+      amount: Number(transactionData.amount)
+    });
+    
+    return response.data;
+  } catch (error) {
+    let errorMessage = 'Payment processing failed';
+    
+    if (error.response) {
+      errorMessage = error.response.data.error || `Server error: ${error.response.status}`;
+    } else if (error.request) {
+      errorMessage = 'Banking service not responding';
+    } else {
+      errorMessage = error.message;
+    }
+    
+    throw new Error(errorMessage);
+  }
+};
+
+// Add backend test function
+export const testBackendConnection = async () => {
+  try {
+    const response = await axios.get(`${API_BASE}/health`);
+    return response.data;
+  } catch (error) {
+    throw new Error('Backend connection test failed');
   }
 };

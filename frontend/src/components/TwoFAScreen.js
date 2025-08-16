@@ -6,16 +6,19 @@ import {
   CircularProgress
 } from '@mui/material';
 import LockClockIcon from '@mui/icons-material/LockClock';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-const TwoFAScreen = ({ countdown, onCancel }) => {
+const TwoFAScreen = ({ countdown, riskLevel, onApprove, onCancel }) => {
+  const isHighRisk = riskLevel === 'high';
+  
   return (
     <Box
       sx={{
         mt: 3,
         p: 3,
-        border: '1px solid #1976d2',
+        border: '2px solid #1976d2',
         borderRadius: 2,
-        backgroundColor: '#e3f2fd',
+        backgroundColor: isHighRisk ? '#fff8e1' : '#e3f2fd',
         textAlign: 'center'
       }}
     >
@@ -27,40 +30,71 @@ const TwoFAScreen = ({ countdown, onCancel }) => {
         FIDO2 passkey sent to your mobile device
       </Typography>
       
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
-        <CircularProgress 
-          variant="determinate" 
-          value={(countdown / 60) * 100} 
-          size={80}
-          thickness={4}
-          sx={{ color: '#1976d2' }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+      {isHighRisk && (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
+            <CircularProgress 
+              variant="determinate" 
+              value={(countdown / 60) * 100} 
+              size={80}
+              thickness={4}
+              sx={{ color: '#d32f2f' }}
+            />
+            <Box
+              sx={{
+                position: 'absolute',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Typography variant="h4" component="div" color="text.secondary">
+                {countdown}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2, color: '#d32f2f' }}>
+            Auto-block in {countdown} seconds
+          </Typography>
+        </>
+      )}
+      
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 3 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<CheckCircleIcon />}
+          onClick={onApprove}
+          sx={{ 
+            fontWeight: 'bold',
+            py: 1.5,
+            backgroundColor: '#388e3c',
+            minWidth: '180px'
           }}
         >
-          <Typography variant="h6" component="div" color="text.secondary">
-            {countdown}
-          </Typography>
-        </Box>
+          APPROVE PAYMENT
+        </Button>
+        
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={onCancel}
+          sx={{ 
+            fontWeight: 'bold',
+            py: 1.5,
+            minWidth: '180px'
+          }}
+        >
+          CANCEL PAYMENT
+        </Button>
       </Box>
       
-      <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2 }}>
-        Auto-block in {countdown} seconds
-      </Typography>
-      
-      <Button
-        variant="outlined"
-        color="error"
-        onClick={onCancel}
-        sx={{ fontWeight: 'bold', py: 1.5 }}
-      >
-        CANCEL PAYMENT
-      </Button>
+      {isHighRisk && (
+        <Typography variant="body2" sx={{ mt: 3, color: '#d32f2f', fontStyle: 'italic' }}>
+          Note: High-risk transactions will be blocked even after approval
+        </Typography>
+      )}
     </Box>
   );
 };

@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import BlockIcon from '@mui/icons-material/Block';
 import WarningIcon from '@mui/icons-material/Warning';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
@@ -19,23 +18,22 @@ const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
   const isBlock = riskData.recommendation === 'BLOCK';
   const isReview = riskData.recommendation === 'REVIEW';
   const riskColor = isBlock ? 'error' : isReview ? 'warning' : 'success';
-  const RiskIcon = isBlock ? BlockIcon : isReview ? WarningIcon : CheckCircleIcon;
-  
+
   return (
     <Box
       sx={{
         mt: 3,
         p: 3,
-        border: 1,
+        border: 2,
         borderRadius: 2,
         borderColor: `${riskColor}.main`,
         backgroundColor: `${riskColor}.light`
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <RiskIcon sx={{ fontSize: 32, mr: 1.5, color: `${riskColor}.dark` }} />
+        <WarningIcon sx={{ fontSize: 32, mr: 1.5, color: `${riskColor}.dark` }} />
         <Typography variant="h6" sx={{ fontWeight: 'bold', color: `${riskColor}.dark` }}>
-          Risk Score: {riskData.score} - {riskData.recommendation}
+          Risk Score: {riskData.score}% - {riskData.recommendation}
         </Typography>
       </Box>
       

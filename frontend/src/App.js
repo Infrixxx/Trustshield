@@ -3,7 +3,9 @@ import PaymentForm from './components/PaymentForm';
 import RiskPanel from './components/RiskPanel';
 import FraudPacket from './components/FraudPacket';
 import TwoFAScreen from './components/TwoFAScreen';
-import { checkRisk, generateFraudPacket } from './services/api';
+import PaymentProcessing from './components/PaymentProcessing';
+import PaymentSuccess from './components/PaymentSuccess';
+import { checkRisk, generateFraudPacket, processPayment } from './services/api';
 import { 
   Container, 
   Box, 
@@ -20,8 +22,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
-  const [verificationState, setVerificationState] = useState('idle'); 
+  const [verificationState, setVerificationState] = useState('idle');
   const [countdown, setCountdown] = useState(60);
+  const [transactionData, setTransactionData] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState(null);
 
   // Countdown effect
   useEffect(() => {
@@ -46,15 +50,16 @@ function App() {
     setRiskData(null);
     setFraudPacket(null);
     setError(null);
+    setTransactionData(formData);
     
     try {
       const result = await checkRisk(formData.merchant, formData.amount);
       setRiskData(result);
+      
       if (result.recommendation === 'BLOCK') {
         setVerificationState('highRisk');
       } else {
-        setVerificationState('idle');
-        alert('Transaction verified as low risk');
+        setVerificationState('lowRisk');
       }
     } catch (error) {
       console.error('Risk assessment failed:', error);
@@ -73,6 +78,9 @@ function App() {
       const packet = await generateFraudPacket(riskData);
       setFraudPacket(packet);
       setVerificationState('blocked');
+      
+      // In real app: Alert bank and SAPS
+      console.log('Alerting bank and SAPS about fraud case:', packet.caseId);
     } catch (error) {
       console.error('Report generation failed:', error);
       setError(error.message);
@@ -91,6 +99,30 @@ function App() {
     setVerificationState('awaiting2FA');
   };
 
+  const handleProceedToPayment = () => {
+    setVerificationState('awaiting2FA');
+  };
+
+  const handleApprovePayment = async () => {
+    setVerificationState('processingPayment');
+    try {
+      const result = await processPayment(transactionData);
+      setPaymentStatus(result);
+      setVerificationState('paymentSuccess');
+    } catch (error) {
+      setError('Payment failed: ' + error.message);
+      setVerificationState('lowRisk');
+    }
+  };
+
+  const handleCancelPayment = () => {
+    if (verificationState === 'awaiting2FA' && riskData?.recommendation === 'BLOCK') {
+      handleBlockPayment();
+    } else {
+      resetFlow();
+    }
+  };
+
   const testBackendConnection = async () => {
     setError(null);
     try {
@@ -107,7 +139,9 @@ function App() {
     setVerificationState('idle');
     setRiskData(null);
     setFraudPacket(null);
+    setPaymentStatus(null);
     setCountdown(60);
+    setTransactionData(null);
   };
 
   return (
@@ -169,6 +203,35 @@ function App() {
           </Box>
         )}
 
+        {verificationState === 'lowRisk' && transactionData && (
+          <Box sx={{
+            mt: 3,
+            p: 3,
+            border: '2px solid #4caf50',
+            borderRadius: 2,
+            backgroundColor: '#e8f5e9',
+            textAlign: 'center'
+          }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
+              Transaction Verified
+            </Typography>
+            <Typography variant="body1" sx={{ mt: 2, fontSize: '1.2rem' }}>
+              {transactionData.merchant} - R{transactionData.amount}
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              Risk assessment: Low Risk
+            </Typography>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              sx={{ mt: 3, py: 1.5, fontWeight: 'bold' }}
+              onClick={handleProceedToPayment}
+            >
+              PROCEED TO PAYMENT
+            </Button>
+          </Box>
+        )}
+
         {verificationState === 'highRisk' && riskData && (
           <RiskPanel 
             riskData={riskData} 
@@ -181,7 +244,20 @@ function App() {
         {verificationState === 'awaiting2FA' && (
           <TwoFAScreen 
             countdown={countdown} 
-            onCancel={handleBlockPayment} 
+            riskLevel={riskData?.recommendation === 'BLOCK' ? 'high' : 'low'}
+            onApprove={handleApprovePayment}
+            onCancel={handleCancelPayment}
+          />
+        )}
+
+        {verificationState === 'processingPayment' && (
+          <PaymentProcessing />
+        )}
+
+        {verificationState === 'paymentSuccess' && paymentStatus && (
+          <PaymentSuccess 
+            transactionData={transactionData} 
+            onReset={resetFlow} 
           />
         )}
 
