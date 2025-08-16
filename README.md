@@ -4,7 +4,7 @@ contains API for BET hackathon
 # TrustShield: Real-Time Payment Security for South Africa  
 **Stop fraud at the source. Turn evidence into action. Protect every Rand.**  
 
-[![Demo Video]([https://img.shields.io/badge/DEMO-VIDEO-ff0000?style=for-the-badge)](https://youtu.be/dQw4w9WgXcQ)](https://youtu.be/Q9hHOFAydC8) 
+[![Demo Video]([https://img.shields.io/badge/DEMO-VIDEO-ff0000?style=for-the-badge)](https://youtu.be/dQw4w9WgXcQ)](https://docs.google.com/presentation/d/1R3a72kaofB4my4rPROoQPS_TI-BPEkCLmh6slsoJHqw/edit?usp=sharing)
 [![Live Demo](https://trustshield.netlify.app/) 
 [![Pitch Deck](https://docs.google.com/presentation/d/1R3a72kaofB4my4rPROoQPS_TI-BPEkCLmh6slsoJHqw/edit?usp=sharing)
 
