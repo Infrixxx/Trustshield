@@ -1,0 +1,44 @@
+### Test Merchant Verification
+POST http://localhost:3001/verify
+Content-Type: application/json
+
+{
+  "merchant": "Mzansi Construction"
+}
+
+### Test Risk Scoring
+POST http://localhost:3001/score
+Content-Type: application/json
+
+{
+  "amount": 15000,
+  "verification": {
+    "cipcStatus": "NOT_REGISTERED",
+    "watchlisted": true,
+    "reports": 15,
+    "riskLevel": "HIGH"
+  }
+}
+
+### Test Payment Blocking
+POST http://localhost:3001/block
+Content-Type: application/json
+
+{
+  "merchant": "Mzansi Construction",
+  "amount": 15000,
+  "verification": {
+    "cipcStatus": "NOT_REGISTERED",
+    "watchlisted": true,
+    "reports": 15,
+    "riskLevel": "HIGH"
+  },
+  "riskData": {
+    "risk": 88,
+    "riskCategory": "HIGH",
+    "triggers": ["High amount", "Unregistered business", "Watchlisted"]
+  }
+}
+
+### Health Check
+GET http://localhost:3001/health
