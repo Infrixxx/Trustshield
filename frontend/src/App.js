@@ -216,7 +216,7 @@ function App() {
 
           {verificationState === 'highRisk' && riskData && (
             <RiskPanel 
-              riskData={riskData} 
+              transactionData={transactionData}
               onBlock={handleBlockPayment}
               onConfirm2PA={handleConfirm2PA}
               isGenerating={isGenerating}

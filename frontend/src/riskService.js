@@ -1,54 +1,48 @@
-// src/services/riskService.js
 import cipcData from './cipc.json';
 import watchlistData from './watchlist.json';
 
 export function assessRisk(merchant, amount) {
-  // Normalize merchant name for comparison
   const merchantLower = merchant.toLowerCase();
+  let score = 0;
+  const triggers = [];
   
-  // 1. Check CIPC registration status
+  // 1. Check CIPC registration
   const cipcRecord = cipcData.find(item => 
     item.name.toLowerCase() === merchantLower
   );
+  
+  if (!cipcRecord) {
+    triggers.push('Unregistered business (CIPC)');
+    score += 70;
+  } else if (cipcRecord.status === 'UNREGISTERED') {
+    triggers.push('CIPC registration: UNREGISTERED');
+    score += 70;
+  }
   
   // 2. Check watchlist
   const watchlistRecord = watchlistData.find(item => 
     merchantLower.includes(item.name.toLowerCase())
   );
-
-  // 3. Calculate risk score
-  let score = 0;
-  const triggers = [];
   
-  // Penalty for unregistered businesses
-  if (!cipcRecord || cipcRecord.status === 'UNREGISTERED') {
-    score += 70;
-    triggers.push('Unregistered business (CIPC)');
-  }
-  
-  // Watchlist match penalty
   if (watchlistRecord) {
-    score += watchlistRecord.riskScore * 0.3;
     triggers.push(`Watchlist match: ${watchlistRecord.reason}`);
+    score += watchlistRecord.riskScore * 0.3;
   }
   
-  // Amount risk (R10,000 = 30% risk)
-  const amountRisk = Math.min(amount / 10000 * 30, 30);
-  score += amountRisk;
-  
-  // Critical if contains 'scam'
+  // 3. Check for scam keywords
   if (merchantLower.includes('scam')) {
-    score = 100;
     triggers.push('Contains scam terminology');
+    score = 100; // Automatic 100% for scam names
   }
   
-  // Cap at 100
-  score = Math.min(score, 100);
-  
-  // Add high amount trigger
-  if (amount > 10000) {
+  // 4. Amount-based risk
+  if (amount > 5000) {
     triggers.push(`High amount: R${amount}`);
+    score += 20;
   }
+  
+  // Ensure score is between 0-100
+  score = Math.min(Math.max(score, 0), 100);
   
   return {
     score: Math.round(score),
