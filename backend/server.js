@@ -224,3 +224,10 @@ app.listen(PORT, () => {
     POST /block - Fraud reporting
     POST /payment - Payment processing`);
 });
+
+if (process.env.NETLIFY) {
+  const serverless = require('serverless-http');
+  exports.handler = serverless(require('./server'));
+} else {
+  app.listen(3001, () => console.log('Local server running'));
+}
