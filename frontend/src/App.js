@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import PaymentForm from './components/PaymentForm';
 import RiskPanel from './components/RiskPanel';
-import FraudPacket from './components/FraudPacket';
 import PaymentSuccess from './components/PaymentSuccess';
 import { checkRisk, generateFraudPacket, processPayment } from './services/api';
+import FraudCaseView from './components/FraudCaseView';  // Fixed import path
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -275,7 +275,11 @@ function App() {
           )}
 
           {verificationState === 'blocked' && fraudPacket && (
-            <FraudPacket caseData={fraudPacket} onReset={resetFlow} />
+            <FraudCaseView 
+              caseId={fraudPacket.caseId} 
+              onReset={resetFlow}
+              transactionData={transactionData}
+            />
           )}
         </main>
 
