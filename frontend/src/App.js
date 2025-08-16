@@ -2,19 +2,38 @@ import React, { useState, useEffect } from 'react';
 import PaymentForm from './components/PaymentForm';
 import RiskPanel from './components/RiskPanel';
 import FraudPacket from './components/FraudPacket';
-import TwoFAScreen from './components/TwoFAScreen';
-import PaymentProcessing from './components/PaymentProcessing';
 import PaymentSuccess from './components/PaymentSuccess';
 import { checkRisk, generateFraudPacket, processPayment } from './services/api';
-import { 
-  Container, 
-  Box, 
-  Typography, 
-  CircularProgress,
-  CssBaseline,
-  Button,
-  Alert
-} from '@mui/material';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+  
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  
+  componentDidCatch(error, errorInfo) {
+    console.error("Error caught by boundary:", error, errorInfo);
+    this.setState({ error, errorInfo });
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-fallback">
+          <h2>Something went wrong</h2>
+          <p>{this.state.error && this.state.error.toString()}</p>
+          <button onClick={() => window.location.reload()}>Reload Application</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const [riskData, setRiskData] = useState(null);
@@ -63,7 +82,7 @@ function App() {
       }
     } catch (error) {
       console.error('Risk assessment failed:', error);
-      setError(error.message);
+      setError(error.message || 'Risk assessment failed');
       setVerificationState('idle');
     } finally {
       setIsLoading(false);
@@ -83,7 +102,7 @@ function App() {
       console.log('Alerting bank and SAPS about fraud case:', packet.caseId);
     } catch (error) {
       console.error('Report generation failed:', error);
-      setError(error.message);
+      setError(error.message || 'Report generation failed');
       setVerificationState('highRisk');
     } finally {
       setIsGenerating(false);
@@ -110,7 +129,7 @@ function App() {
       setPaymentStatus(result);
       setVerificationState('paymentSuccess');
     } catch (error) {
-      setError('Payment failed: ' + error.message);
+      setError('Payment failed: ' + (error.message || 'Unknown error'));
       setVerificationState('lowRisk');
     }
   };
@@ -131,7 +150,7 @@ function App() {
       setError("Backend connection successful! ✔️");
       setTimeout(() => setError(null), 3000);
     } catch (error) {
-      setError(`Connection failed: ${error.message}`);
+      setError(`Connection failed: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -142,164 +161,131 @@ function App() {
     setPaymentStatus(null);
     setCountdown(60);
     setTransactionData(null);
+    setError(null);
   };
 
   return (
-    <>
-      <CssBaseline />
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            sx={{ 
-              fontWeight: 'bold', 
-              color: '#1971c2',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
-              mb: 1
-            }}
-          >
-            TRUSTSHIELD
-          </Typography>
-          <Typography 
-            variant="h6" 
-            component="h2" 
-            sx={{ 
-              color: '#495057',
-              letterSpacing: 1.5,
-              textTransform: 'uppercase'
-            }}
-          >
-            South African Fraud Prevention System
-          </Typography>
-          <Typography 
-            variant="subtitle1" 
-            component="h3" 
-            sx={{ 
-              color: '#495057',
-              mt: 2
-            }}
-          >
-            South African Payment Verification
-          </Typography>
-        </Box>
+    <ErrorBoundary>
+      <div className="app-container">
+        <header className="app-header">
+          <div className="logo-container">
+            {/* Use a simple SVG instead of react-icons to avoid rendering issues */}
+            <svg className="app-logo" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <div className="header-text">
+              <h1>TRUST SHIELD</h1>
+              <p>AI-Powered Payment Security & Fraud Detection Platform</p>
+              <div className="subheader">Protecting transactions with blockchain-secured evidence generation</div>
+            </div>
+          </div>
+        </header>
 
-        {error && (
-          <Alert severity={error.includes('successful') ? "success" : "error"} sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
+        <main className="app-main">
+          {error && (
+            <div className={`error-alert ${error.includes('successful') ? 'success' : 'error'}`}>
+              {error}
+            </div>
+          )}
 
-        {verificationState === 'idle' && (
-          <PaymentForm onSubmit={handleRiskCheck} isLoading={isLoading} />
-        )}
+          {verificationState === 'idle' && (
+            <PaymentForm onSubmit={handleRiskCheck} isLoading={isLoading} />
+          )}
 
-        {verificationState === 'verifying' && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <CircularProgress size={80} thickness={4} />
-            <Typography variant="h6" sx={{ ml: 2, alignSelf: 'center' }}>
-              Analyzing SA Fraud Patterns...
-            </Typography>
-          </Box>
-        )}
+          {verificationState === 'verifying' && (
+            <div className="verifying-screen">
+              <div className="spinner"></div>
+              <p>Analyzing SA Fraud Patterns...</p>
+            </div>
+          )}
 
-        {verificationState === 'lowRisk' && transactionData && (
-          <Box sx={{
-            mt: 3,
-            p: 3,
-            border: '2px solid #4caf50',
-            borderRadius: 2,
-            backgroundColor: '#e8f5e9',
-            textAlign: 'center'
-          }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>
-              Transaction Verified
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 2, fontSize: '1.2rem' }}>
-              {transactionData.merchant} - R{transactionData.amount}
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              Risk assessment: Low Risk
-            </Typography>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              sx={{ mt: 3, py: 1.5, fontWeight: 'bold' }}
-              onClick={handleProceedToPayment}
-            >
-              PROCEED TO PAYMENT
-            </Button>
-          </Box>
-        )}
+          {verificationState === 'lowRisk' && transactionData && (
+            <div className="low-risk-panel">
+              <h2>Transaction Verified</h2>
+              <div className="transaction-details">
+                <p>{transactionData.merchant} - R{transactionData.amount}</p>
+                <p>Risk assessment: Low Risk</p>
+              </div>
+              <button 
+                className="proceed-btn"
+                onClick={handleProceedToPayment}
+              >
+                PROCEED TO PAYMENT
+              </button>
+            </div>
+          )}
 
-        {verificationState === 'highRisk' && riskData && (
-          <RiskPanel 
-            riskData={riskData} 
-            onBlock={handleBlockPayment}
-            onConfirm2PA={handleConfirm2PA}
-            isGenerating={isGenerating}
-          />
-        )}
+          {verificationState === 'highRisk' && riskData && (
+            <RiskPanel 
+              riskData={riskData} 
+              onBlock={handleBlockPayment}
+              onConfirm2PA={handleConfirm2PA}
+              isGenerating={isGenerating}
+            />
+          )}
 
-        {verificationState === 'awaiting2FA' && (
-          <TwoFAScreen 
-            countdown={countdown} 
-            riskLevel={riskData?.recommendation === 'BLOCK' ? 'high' : 'low'}
-            onApprove={handleApprovePayment}
-            onCancel={handleCancelPayment}
-          />
-        )}
+          {verificationState === 'awaiting2FA' && (
+            <div className="awaiting-2fa">
+              <h3>Two-Factor Authentication</h3>
+              <p>FIDO2 passkey sent to your mobile device</p>
+              
+              <div className="countdown-timer">{countdown}</div>
+              <p className="countdown-label">Auto-block in {countdown} seconds</p>
+              
+              <div className="action-buttons">
+                <button onClick={handleApprovePayment} className="confirm-btn">
+                  APPROVE PAYMENT
+                </button>
+                <button onClick={handleCancelPayment} className="cancel-btn">
+                  CANCEL PAYMENT
+                </button>
+              </div>
+              
+              <p className="warning-note">
+                Note: High-risk transactions will be blocked even after approval
+              </p>
+              
+              <button 
+                className="test-btn"
+                onClick={testBackendConnection}
+              >
+                TEST BACKEND CONNECTION
+              </button>
+            </div>
+          )}
 
-        {verificationState === 'processingPayment' && (
-          <PaymentProcessing />
-        )}
+          {verificationState === 'processingPayment' && (
+            <div className="verifying-screen">
+              <div className="spinner"></div>
+              <p>Processing Payment...</p>
+            </div>
+          )}
 
-        {verificationState === 'paymentSuccess' && paymentStatus && (
-          <PaymentSuccess 
-            transactionData={transactionData} 
-            onReset={resetFlow} 
-          />
-        )}
+          {verificationState === 'paymentSuccess' && paymentStatus && (
+            <PaymentSuccess 
+              transactionData={transactionData} 
+              onReset={resetFlow} 
+            />
+          )}
 
-        {(verificationState === 'blocking' || isGenerating) && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <CircularProgress size={80} thickness={4} />
-            <Typography variant="h6" sx={{ ml: 2, alignSelf: 'center' }}>
-              Generating Fraud Packet...
-            </Typography>
-          </Box>
-        )}
+          {(verificationState === 'blocking' || isGenerating) && (
+            <div className="verifying-screen">
+              <div className="spinner"></div>
+              <p>Generating Fraud Packet...</p>
+            </div>
+          )}
 
-        {verificationState === 'blocked' && fraudPacket && (
-          <FraudPacket caseData={fraudPacket} onReset={resetFlow} />
-        )}
-        
-        <Box sx={{ textAlign: 'center', mt: 4 }}>
-          <Button 
-            variant="outlined" 
-            color="secondary"
-            onClick={testBackendConnection}
-            sx={{ fontWeight: 'bold' }}
-          >
-            TEST BACKEND CONNECTION
-          </Button>
-        </Box>
+          {verificationState === 'blocked' && fraudPacket && (
+            <FraudPacket caseData={fraudPacket} onReset={resetFlow} />
+          )}
+        </main>
 
-        <Box sx={{ 
-          mt: 6, 
-          pt: 3, 
-          borderTop: '1px solid #dee2e6', 
-          textAlign: 'center' 
-        }}>
-          <Typography variant="body2" color="textSecondary">
-            © {new Date().getFullYear()} TrustShield | Preventing R740m in SA fraud annually
-          </Typography>
-          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-            Developed for BET Hackathon | All rights reserved
-          </Typography>
-        </Box>
-      </Container>
-    </>
+        <footer className="app-footer">
+          <div>2025 TrustShield | Preventing R740m in SA fraud annually</div>
+          <div>Developed for BET Hackathon | All rights reserved</div>
+        </footer>
+      </div>
+    </ErrorBoundary>
   );
 }
 

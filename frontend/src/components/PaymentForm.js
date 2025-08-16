@@ -1,12 +1,4 @@
 import React, { useState } from 'react';
-import { 
-  TextField, 
-  Button, 
-  Box, 
-  Typography,
-  CircularProgress
-} from '@mui/material';
-import FlagIcon from '@mui/icons-material/Flag';
 
 const PaymentForm = ({ onSubmit, isLoading }) => {
   const [formData, setFormData] = useState({
@@ -24,69 +16,55 @@ const PaymentForm = ({ onSubmit, isLoading }) => {
   };
 
   return (
-    <Box 
-      component="form" 
-      onSubmit={handleSubmit}
-      sx={{
-        p: 3,
-        border: '1px solid #e0e0e0',
-        borderRadius: 2,
-        backgroundColor: '#f8f9fa'
-      }}
-    >
-      <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-        <FlagIcon sx={{ color: '#007749', mr: 1.5, fontSize: 32 }} />
-        South African Payment Verification
-      </Typography>
+    <div className="payment-form">
+      <h2 className="subheader">Payment Security Check</h2>
+      <p className="form-description">
+        Enter transaction details for AI-powered fraud detection
+      </p>
       
-      <TextField
-        fullWidth
-        label="Merchant Name*"
-        name="merchant"
-        value={formData.merchant}
-        onChange={handleChange}
-        margin="normal"
-        placeholder="e.g. Mzansi Construction"
-        required
-        disabled={isLoading}
-        sx={{ backgroundColor: 'white' }}
-      />
-      
-      <TextField
-        fullWidth
-        label="Amount (ZAR)*"
-        name="amount"
-        type="number"
-        value={formData.amount}
-        onChange={handleChange}
-        margin="normal"
-        inputProps={{ min: 1 }}
-        required
-        disabled={isLoading}
-        sx={{ backgroundColor: 'white' }}
-      />
-      
-      <Button
-        type="submit"
-        variant="contained"
-        color="primary"
-        fullWidth
-        disabled={isLoading}
-        size="large"
-        sx={{ 
-          mt: 2,
-          py: 1.5,
-          fontWeight: 'bold',
-          fontSize: '1.1rem'
-        }}
-      >
-        {isLoading ? (
-          <CircularProgress size={24} sx={{ color: 'white' }} />
-        ) : (
-          'VERIFY TRANSACTION'
-        )}
-      </Button>
-    </Box>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="merchant">Merchant Name</label>
+          <input
+            type="text"
+            id="merchant"
+            name="merchant"
+            value={formData.merchant}
+            onChange={handleChange}
+            placeholder="e.g., Amazon, Pick n Pay, Shoprite"
+            required
+            disabled={isLoading}
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="amount">Transaction Amount (ZAR)</label>
+          <input
+            type="number"
+            id="amount"
+            name="amount"
+            value={formData.amount}
+            onChange={handleChange}
+            placeholder="0.00"
+            min="1"
+            required
+            disabled={isLoading}
+          />
+        </div>
+        
+        <button
+          type="submit"
+          className="verify-btn"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <span className="spinner"></span>
+          ) : (
+            'ANALYZE RISK'
+          )}
+        </button>
+      </form>
+    </div>
   );
 };
 

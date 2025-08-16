@@ -21,6 +21,8 @@ backend/.env
 backend/package-lock.json
 backend/yarn.lock
 backend/.vscode/
+node_modules/react-icons/
+node_modules/react
 
 # General ignores
 .DS_Store
