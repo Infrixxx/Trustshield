@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build:fullstack"
+  publish = "client/build"  # React build output
+  functions = "server"      # Treat backend as serverless functions
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
