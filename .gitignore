@@ -1,0 +1,34 @@
+# Frontend ignores
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/build/
+frontend/dist/
+frontend/.cache/
+frontend/coverage/
+frontend/.DS_Store
+frontend/package-lock.json
+frontend/yarn.lock
+frontend/.pnp.*
+frontend/.vscode/
+
+# Backend ignores
+backend/node_modules/
+backend/.env
+backend/package-lock.json
+backend/yarn.lock
+backend/.vscode/
+
+# General ignores
+.DS_Store
+.env
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vscode/
+.idea/

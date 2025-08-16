@@ -1,77 +1,61 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 
-// 1. Configure bulletproof JSON parsing
-app.use(express.json({
-  strict: true,
-  verify: (req, res, buf) => {
-    req.rawBody = buf.toString();
-    try {
-      JSON.parse(req.rawBody);
-    } catch (e) {
-      throw new Error('Invalid JSON');
-    }
-  }
-}));
+// 1. Enable CORS first
+app.use(cors());
 
-// 2. Load data files with validation
+// 2. Simple JSON middleware
+app.use(express.json());
+
+// 3. Load data files
 const dataPath = path.join(__dirname, 'data');
-const loadData = (file) => {
-  try {
-    const raw = fs.readFileSync(path.join(dataPath, file), 'utf8');
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data)) throw new Error('Data must be an array');
-    return data;
-  } catch (e) {
-    console.error(`CRITICAL: Failed to load ${file}`, e);
-    process.exit(1); // Exit if data fails to load
-  }
-};
+const cipcData = JSON.parse(fs.readFileSync(path.join(dataPath, 'cipc.json'), 'utf8'));
+const watchlistData = JSON.parse(fs.readFileSync(path.join(dataPath, 'watchlist.json'), 'utf8'));
 
-const cipcData = loadData('cipc.json');
-const watchlistData = loadData('watchlist.json');
+// 4. Health endpoint (SIMPLIFIED)
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'operational',
+    version: '1.0.0',
+    region: 'South Africa',
+    data: {
+      cipc: cipcData.length,
+      watchlist: watchlistData.length
+    }
+  });
+});
 
-// 3. Scoring endpoint with atomic error handling
+// 5. Scoring endpoint
 app.post('/score', (req, res) => {
   try {
-    // Validate request structure
-    if (!req.body || typeof req.body !== 'object') {
-      return res.status(400).json({ 
-        error: "Invalid request",
-        details: "Request body must be a JSON object"
-      });
-    }
-
     const { merchant, amount } = req.body;
-
-    // Validate field types
-    if (typeof merchant !== 'string' || merchant.trim() === '') {
+    
+    // Input validation
+    if (!merchant || typeof amount !== 'number') {
       return res.status(400).json({
-        error: "Invalid merchant",
-        details: "Must be a non-empty string"
+        error: "Invalid input",
+        details: "Merchant (string) and amount (number) are required"
       });
     }
 
-    if (typeof amount !== 'number' || isNaN(amount)) {
-      return res.status(400).json({
-        error: "Invalid amount",
-        details: "Must be a valid number"
-      });
-    }
-
-    // Find business data (case-insensitive)
+    // Find business data
     const business = cipcData.find(b => 
-      b?.name?.toLowerCase() === merchant.toLowerCase()
+      b.name.toLowerCase() === merchant.toLowerCase()
     ) || { status: 'UNREGISTERED' };
-
-    // Calculate risk score
+    
+    // Find watchlist entry
+    const watchlistEntry = watchlistData.find(w => 
+      w.name.toLowerCase() === merchant.toLowerCase()
+    );
+    
+    // Calculate risk
     let score = 5;
     const triggers = [];
     
-    // SA-specific rules
     if (amount > 5000) {
       score += 40;
       triggers.push(`High amount (R${amount.toLocaleString('en-ZA')})`);
@@ -82,40 +66,26 @@ app.post('/score', (req, res) => {
       triggers.push("Unregistered business");
     }
     
-    // Check watchlist
-    const watchlistEntry = watchlistData.find(w => 
-      w?.name?.toLowerCase() === merchant.toLowerCase()
-    );
-    
     if (watchlistEntry) {
       score += Math.min(25, watchlistEntry.reports * 5);
       triggers.push(`Watchlisted (${watchlistEntry.reports} reports)`);
     }
-
-    // Successful response
+    
     res.json({
-      success: true,
       score: Math.min(score, 100),
       triggers,
-      recommendation: score >= 70 ? "BLOCK" : "ALLOW",
-      timestamp: new Date().toISOString()
+      recommendation: score >= 70 ? "BLOCK" : "ALLOW"
     });
-
+    
   } catch (error) {
-    console.error('SERVER ERROR:', error);
-    res.status(500).json({
-      error: "Internal server error",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    console.error('Scoring error:', error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// 4. Start server
-const PORT = process.env.PORT || 3001;
+// 6. Start server
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`TrustShield API running on port ${PORT}`);
-  console.log('Data loaded:', {
-    cipcRecords: cipcData.length,
-    watchlistRecords: watchlistData.length
-  });
+  console.log(`Health check: http://localhost:${PORT}/health`);
 });

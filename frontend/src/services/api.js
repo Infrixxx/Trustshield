@@ -8,23 +8,61 @@ export const checkRisk = async (merchant, amount) => {
       merchant,
       amount: Number(amount)
     });
-    return response.data;
+    
+    return {
+      score: response.data.score,
+      triggers: response.data.triggers,
+      recommendation: response.data.recommendation,
+      merchantData: {
+        name: merchant,
+        status: response.data.cipcStatus || 'UNREGISTERED',
+        isWatchlisted: response.data.watchlisted
+      }
+    };
+    
   } catch (error) {
-    console.error('API Error:', error.response?.data || error.message);
-    throw new Error('Failed to assess fraud risk. Please try again.');
+    let errorMessage = 'Fraud check failed';
+    
+    if (error.response) {
+      errorMessage = error.response.data.error || `Server error: ${error.response.status}`;
+    } else if (error.request) {
+      errorMessage = 'Backend not responding. Is it running?';
+    } else {
+      errorMessage = error.message;
+    }
+    
+    throw new Error(errorMessage);
   }
 };
 
 export const generateFraudPacket = async (riskData) => {
-  // In a real implementation, this would call /block endpoint
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        caseId: `SAPS-${Math.floor(1000 + Math.random() * 9000)}`,
-        filename: `SAPS_Case_00${Math.floor(Math.random() * 3) + 1}.pdf`,
-        timestamp: new Date().toISOString(),
-        blockchainHash: `0x${Math.random().toString(16).substr(2, 64)}`
-      });
-    }, 1500);
-  });
+  try {
+    const response = await axios.post(`${API_BASE}/block`, {
+      merchant: riskData.merchantData.name,
+      amount: riskData.amount || 0,
+      verification: riskData.merchantData,
+      triggers: riskData.triggers
+    });
+    
+    return {
+      success: true,
+      caseId: response.data.caseId,
+      filename: `SAPS_Case_${response.data.caseId.replace(/\//g, '_')}.pdf`,
+      timestamp: new Date().toISOString(),
+      blockchainHash: response.data.txHash
+    };
+    
+  } catch (error) {
+    let errorMessage = 'Fraud packet generation failed';
+    
+    if (error.response) {
+      errorMessage = error.response.data.error || `Server error: ${error.response.status}`;
+    } else if (error.request) {
+      errorMessage = 'Backend not responding. Is it running?';
+    } else {
+      errorMessage = error.message;
+    }
+    
+    throw new Error(errorMessage);
+  }
 };

@@ -1,18 +1,22 @@
 [
   {
     "name": "Mzansi Construction",
-    "reports": 12
+    "reports": 12,
+    "reason": "Multiple scam reports involving advance fee fraud"
   },
   {
     "name": "Fast Money Loans",
-    "reports": 8
+    "reports": 8,
+    "reason": "Unauthorized debit orders"
   },
   {
     "name": "Taxi Scam Pty",
-    "reports": 23
+    "reports": 23,
+    "reason": "Fake taxi bookings and payments"
   },
   {
     "name": "Quick Cash Solutions",
-    "reports": 17
+    "reports": 17,
+    "reason": "Advance fee fraud"
   }
 ]

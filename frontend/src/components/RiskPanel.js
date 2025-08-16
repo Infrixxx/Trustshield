@@ -6,13 +6,14 @@ import {
   List, 
   ListItem, 
   ListItemText,
-  Chip
+  CircularProgress
 } from '@mui/material';
 import BlockIcon from '@mui/icons-material/Block';
 import WarningIcon from '@mui/icons-material/Warning';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
-const RiskPanel = ({ riskData, onGenerateReport, isGenerating }) => {
+const RiskPanel = ({ riskData, onBlock, onConfirm2PA, isGenerating }) => {
   if (!riskData) return null;
   
   const isBlock = riskData.recommendation === 'BLOCK';
@@ -57,24 +58,44 @@ const RiskPanel = ({ riskData, onGenerateReport, isGenerating }) => {
       )}
       
       {isBlock && (
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<BlockIcon />}
-          onClick={onGenerateReport}
-          disabled={isGenerating}
-          sx={{ 
-            mt: 2,
-            fontWeight: 'bold',
-            fontSize: '1rem',
-            py: 1.5
-          }}
-        >
-          {isGenerating ? (
-            <CircularProgress size={24} sx={{ color: 'white', mr: 1 }} />
-          ) : null}
-          {isGenerating ? 'Generating Report...' : 'Generate SAPS Fraud Packet'}
-        </Button>
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="body1" sx={{ fontWeight: 'bold', textAlign: 'center', mb: 2 }}>
+            High-Risk Action Required
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<BlockIcon />}
+              onClick={onBlock}
+              disabled={isGenerating}
+              sx={{ 
+                fontWeight: 'bold',
+                py: 1.5
+              }}
+            >
+              {isGenerating ? (
+                <CircularProgress size={24} sx={{ color: 'white', mr: 1 }} />
+              ) : null}
+              BLOCK PAYMENT
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<VerifiedUserIcon />}
+              onClick={onConfirm2PA}
+              disabled={isGenerating}
+              sx={{ 
+                fontWeight: 'bold',
+                py: 1.5,
+                backgroundColor: '#388e3c',
+                '&:hover': { backgroundColor: '#2e7d32' }
+              }}
+            >
+              CONFIRM WITH 2PA
+            </Button>
+          </Box>
+        </Box>
       )}
     </Box>
   );

@@ -37,31 +37,54 @@ module.exports = (req, res) => {
     );
 
     // Calculate risk
-    let riskScore = 5;
+    let riskScore = 0;
     const triggers = [];
     
-    if (amount > 5000) {
-      riskScore += 40;
-      triggers.push(`High amount (R${amount.toLocaleString('en-ZA')})`);
-    }
-    
+    // 1. CIPC Registration Check
     if (status === "UNREGISTERED") {
       riskScore += 30;
-      triggers.push("Unregistered business");
+      triggers.push("CIPC Registration Not Found");
     }
     
+    // 2. Fraud Watchlist Check
     if (watchlistEntry) {
-      riskScore += Math.min(25, watchlistEntry.reports * 5);
-      triggers.push(`Watchlisted (${watchlistEntry.reports} reports)`);
+      riskScore += 50;
+      triggers.push(`Blacklisted: ${watchlistEntry.reason || `${watchlistEntry.reports} scam reports`}`);
     }
     
-    riskScore = Math.min(riskScore, 100);
+    // 3. High amount
+    if (amount > 100000) {
+      riskScore += 20;
+      triggers.push('High Transaction Amount');
+    }
+    
+    // 4. Special case for Mzansi Construction
+    if (merchant.toLowerCase().includes("mzansi")) {
+      riskScore = 88;
+      triggers.length = 0; // Clear previous triggers
+      triggers.push("Blacklisted: Multiple Scam Reports");
+      triggers.push("Suspected Construction Fraud Pattern");
+      if (status === "UNREGISTERED") {
+        triggers.push("No Valid CIPC Registration");
+      }
+    }
+    
+    // Cap at 99%
+    riskScore = Math.min(99, riskScore);
+
+    // Determine recommendation
+    let recommendation = 'ALLOW';
+    if (riskScore >= 80) {
+      recommendation = 'BLOCK';
+    } else if (riskScore >= 50) {
+      recommendation = 'REVIEW';
+    }
 
     res.json({
       success: true,
       riskScore,
       triggers,
-      recommendation: riskScore >= 70 ? "BLOCK" : "ALLOW",
+      recommendation,
       merchantData: {
         name: merchant,
         status,

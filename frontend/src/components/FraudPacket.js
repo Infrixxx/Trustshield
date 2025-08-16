@@ -12,7 +12,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
-const FraudPacket = ({ caseData }) => {
+const FraudPacket = ({ caseData, onReset }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
 
@@ -128,6 +128,17 @@ const FraudPacket = ({ caseData }) => {
         >
           View on Polygon Explorer
         </Link>
+      </Box>
+      
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Button 
+          variant="contained" 
+          color="primary"
+          onClick={onReset}
+          sx={{ fontWeight: 'bold', py: 1.5, px: 4 }}
+        >
+          VERIFY ANOTHER TRANSACTION
+        </Button>
       </Box>
     </Box>
   );

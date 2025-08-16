@@ -41,12 +41,12 @@ const PaymentForm = ({ onSubmit, isLoading }) => {
       
       <TextField
         fullWidth
-        label="Merchant Name"
+        label="Merchant Name*"
         name="merchant"
         value={formData.merchant}
         onChange={handleChange}
         margin="normal"
-        placeholder="e.g. Taxi Scam Pty"
+        placeholder="e.g. Mzansi Construction"
         required
         disabled={isLoading}
         sx={{ backgroundColor: 'white' }}
@@ -54,7 +54,7 @@ const PaymentForm = ({ onSubmit, isLoading }) => {
       
       <TextField
         fullWidth
-        label="Amount (ZAR)"
+        label="Amount (ZAR)*"
         name="amount"
         type="number"
         value={formData.amount}
@@ -83,7 +83,7 @@ const PaymentForm = ({ onSubmit, isLoading }) => {
         {isLoading ? (
           <CircularProgress size={24} sx={{ color: 'white' }} />
         ) : (
-          'Verify Transaction'
+          'VERIFY TRANSACTION'
         )}
       </Button>
     </Box>
